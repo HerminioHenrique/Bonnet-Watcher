@@ -22,6 +22,28 @@ function makeCandidate(source, searchTerm, title, url, extra = {}) {
   };
 }
 
+function looksLikeStyleNoise(text = "") {
+  const normalized = normalizeWhitespace(text);
+  if (!normalized) return true;
+  return (
+    normalized.startsWith(".css-") ||
+    normalized.includes("@media") ||
+    normalized.includes("{width:") ||
+    normalized.includes("display:-webkit-box") ||
+    normalized.length > 240
+  );
+}
+
+function pickReasonableTitle(possibleTitles = []) {
+  for (const value of possibleTitles) {
+    const title = normalizeWhitespace(value || "");
+    if (!title) continue;
+    if (looksLikeStyleNoise(title)) continue;
+    return title;
+  }
+  return "";
+}
+
 function looksRelevant(text, config) {
   const normalized = normalizeWhitespace(text).toLowerCase();
   const hasVehicle = normalized.includes("renault") && normalized.includes("zoe");
@@ -306,13 +328,19 @@ async function searchGumtree(config) {
       let termMatches = 0;
       $("a[href*='/p/']").each((_, element) => {
         const href = $(element).attr("href");
-        const title = $(element).text();
         const container = $(element).closest("article, li, div");
-        const raw = container.text() || title;
+        const title = pickReasonableTitle([
+          $(element).attr("aria-label"),
+          $(element).attr("title"),
+          $(element).find("h2, h3, h4").first().text(),
+          container.find("h2, h3, h4").first().text(),
+          $(element).text(),
+        ]);
+        const raw = normalizeWhitespace(container.text() || title);
         if (!href || !title || !looksRelevant(`${title} ${raw}`, config)) return;
         items.push(
           makeCandidate(source, term, title, `https://www.gumtree.com${href}`, {
-            summary: raw,
+            summary: raw.slice(0, 500),
             raw_text: raw,
           })
         );

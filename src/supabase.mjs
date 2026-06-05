@@ -1,6 +1,32 @@
 import { createClient } from "@supabase/supabase-js";
 import { utcNow } from "./utils.mjs";
 
+function looksLikeStyleNoise(text = "") {
+  const value = String(text || "").trim();
+  return (
+    !value ||
+    value.startsWith(".css-") ||
+    value.includes("@media") ||
+    value.includes("{width:") ||
+    value.includes("display:-webkit-box") ||
+    value.length > 240
+  );
+}
+
+function deriveSafeTitle(row) {
+  const title = String(row.title || "").trim();
+  if (!looksLikeStyleNoise(title)) {
+    return title;
+  }
+
+  const summary = String(row.summary || "").trim();
+  if (summary && !looksLikeStyleNoise(summary)) {
+    return summary.slice(0, 140);
+  }
+
+  return `${row.source} listing`;
+}
+
 export function createSupabaseAdmin(config) {
   return createClient(config.supabase.url, config.supabase.secretKey, {
     auth: { persistSession: false, autoRefreshToken: false },
@@ -93,14 +119,14 @@ export async function fetchDashboardStatus(client) {
       client.from("watch_runs").select("*").order("started_at_utc", { ascending: false }).limit(1).maybeSingle(),
       client
         .from("listings")
-        .select("title, source, score, compatibility_label, price_text, location, original_url, reasons_json")
+        .select("title, summary, source, score, compatibility_label, price_text, location, original_url, reasons_json")
         .order("score", { ascending: false })
         .limit(12),
     ]);
 
   const recentListings =
     recentResponse.data?.map((row) => ({
-      title: row.title,
+      title: deriveSafeTitle(row),
       source: row.source,
       score: row.score,
       compatibility_label: row.compatibility_label,
