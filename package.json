@@ -1,0 +1,20 @@
+{
+  "name": "zoe-bonnet-watcher-online",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "netlify dev",
+    "build": "node -e \"console.log('No build step required')\"",
+    "test-run": "node ./scripts/test-run.mjs"
+  },
+  "dependencies": {
+    "@supabase/supabase-js": "^2.53.0",
+    "cheerio": "^1.1.0",
+    "dotenv": "^16.6.1",
+    "nodemailer": "^6.10.1"
+  },
+  "devDependencies": {
+    "netlify-cli": "^23.4.0"
+  }
+}

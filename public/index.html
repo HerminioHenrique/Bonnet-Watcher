@@ -1,0 +1,196 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Zoe Bonnet Watcher Online</title>
+    <style>
+      :root {
+        --bg: #f4efe6;
+        --card: rgba(255, 252, 247, 0.92);
+        --text: #1f2933;
+        --muted: #52606d;
+        --accent: #0f766e;
+        --accent-2: #b45309;
+        --border: rgba(31, 41, 51, 0.12);
+        --shadow: 0 20px 40px rgba(31, 41, 51, 0.08);
+      }
+
+      * {
+        box-sizing: border-box;
+      }
+
+      body {
+        margin: 0;
+        font-family: Georgia, "Times New Roman", serif;
+        color: var(--text);
+        background:
+          radial-gradient(circle at top left, rgba(15, 118, 110, 0.18), transparent 28%),
+          radial-gradient(circle at bottom right, rgba(180, 83, 9, 0.18), transparent 30%),
+          linear-gradient(180deg, #f8f4ec 0%, var(--bg) 100%);
+      }
+
+      .wrap {
+        width: min(1120px, calc(100% - 32px));
+        margin: 0 auto;
+        padding: 32px 0 48px;
+      }
+
+      .hero,
+      .panel,
+      .listing {
+        background: var(--card);
+        border: 1px solid var(--border);
+        border-radius: 22px;
+        box-shadow: var(--shadow);
+        backdrop-filter: blur(8px);
+      }
+
+      .hero {
+        padding: 28px;
+        margin-bottom: 20px;
+      }
+
+      h1,
+      h2 {
+        margin: 0 0 12px;
+        font-weight: 700;
+      }
+
+      p {
+        margin: 0;
+        color: var(--muted);
+      }
+
+      .grid {
+        display: grid;
+        grid-template-columns: repeat(4, minmax(0, 1fr));
+        gap: 16px;
+        margin-bottom: 20px;
+      }
+
+      .panel {
+        padding: 18px;
+      }
+
+      .eyebrow {
+        display: inline-block;
+        font-size: 12px;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+        color: var(--accent);
+        margin-bottom: 8px;
+      }
+
+      .value {
+        font-size: 28px;
+        margin-top: 8px;
+      }
+
+      .listings {
+        display: grid;
+        gap: 14px;
+      }
+
+      .listing {
+        padding: 18px;
+      }
+
+      .listing h3 {
+        margin: 0 0 10px;
+        font-size: 20px;
+      }
+
+      .meta {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 10px;
+        margin-bottom: 12px;
+        color: var(--muted);
+      }
+
+      .pill {
+        border: 1px solid rgba(15, 118, 110, 0.22);
+        color: var(--accent);
+        border-radius: 999px;
+        padding: 4px 10px;
+        font-size: 12px;
+      }
+
+      .reasons {
+        margin: 12px 0 0;
+        padding-left: 18px;
+        color: var(--muted);
+      }
+
+      a {
+        color: var(--accent-2);
+      }
+
+      .empty {
+        padding: 22px;
+        text-align: center;
+      }
+
+      @media (max-width: 900px) {
+        .grid {
+          grid-template-columns: repeat(2, minmax(0, 1fr));
+        }
+      }
+
+      @media (max-width: 640px) {
+        .grid {
+          grid-template-columns: 1fr;
+        }
+
+        .wrap {
+          width: min(100% - 20px, 1120px);
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <main class="wrap">
+      <section class="hero">
+        <div class="eyebrow">Online 24/7 Monitor</div>
+        <h1>Zoe Bonnet Watcher</h1>
+        <p>
+          Scheduled search on free hosting, remote history in Supabase, and a live queue of new candidate bonnet listings for the Renault Zoe ZE50 Facelift.
+        </p>
+      </section>
+
+      <section class="grid">
+        <article class="panel">
+          <div class="eyebrow">Last Run</div>
+          <div class="value" id="last-run">-</div>
+          <p id="last-run-meta">Waiting for first run</p>
+        </article>
+        <article class="panel">
+          <div class="eyebrow">Candidates</div>
+          <div class="value" id="candidate-count">0</div>
+          <p>Compatible listings currently stored</p>
+        </article>
+        <article class="panel">
+          <div class="eyebrow">Pending Alerts</div>
+          <div class="value" id="alert-count">0</div>
+          <p>New listings not yet acknowledged</p>
+        </article>
+        <article class="panel">
+          <div class="eyebrow">Sources</div>
+          <div class="value" id="source-count">0</div>
+          <p>Sources that responded in the last run</p>
+        </article>
+      </section>
+
+      <section class="panel">
+        <div class="eyebrow">Recent Listings</div>
+        <div class="listings" id="listings">
+          <div class="empty">Loading...</div>
+        </div>
+      </section>
+    </main>
+
+    <script type="module" src="/app.js"></script>
+  </body>
+</html>
+
