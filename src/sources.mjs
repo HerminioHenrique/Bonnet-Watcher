@@ -44,6 +44,12 @@ function pickReasonableTitle(possibleTitles = []) {
   return "";
 }
 
+function extractPriceFromText(text = "") {
+  const normalized = normalizeWhitespace(text);
+  const match = normalized.match(/(?:£|GBP)\s*[0-9][0-9,]*(?:\.[0-9]{1,2})?/i);
+  return match ? match[0] : "";
+}
+
 function looksRelevant(text, config) {
   const normalized = normalizeWhitespace(text).toLowerCase();
   const hasVehicle = normalized.includes("renault") && normalized.includes("zoe");
@@ -340,6 +346,7 @@ async function searchGumtree(config) {
         if (!href || !title || !looksRelevant(`${title} ${raw}`, config)) return;
         items.push(
           makeCandidate(source, term, title, `https://www.gumtree.com${href}`, {
+            price_text: extractPriceFromText(raw),
             summary: raw.slice(0, 500),
             raw_text: raw,
           })
