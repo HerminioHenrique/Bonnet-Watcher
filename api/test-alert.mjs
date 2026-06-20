@@ -9,7 +9,9 @@ export default async function handler(request) {
     return new Response("Method not allowed", { status: 405 });
   }
 
-  const auth = request.headers.get("authorization") || "";
+  const auth = (typeof request.headers?.get === "function"
+    ? request.headers.get("authorization")
+    : request.headers?.["authorization"]) || "";
   if (auth !== `Bearer ${config.security.backgroundRunToken}`) {
     return new Response("Unauthorized", { status: 401 });
   }

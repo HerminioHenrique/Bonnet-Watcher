@@ -4,8 +4,15 @@ import { runWatcher } from "../src/run-watch.mjs";
 // Requer Vercel Pro ou superior para não ser cortado antes de terminar.
 export const maxDuration = 300;
 
+function getHeader(request, name) {
+  // Suporta Web API Request (headers.get) e Node.js IncomingMessage (headers[name])
+  return (typeof request.headers?.get === "function"
+    ? request.headers.get(name)
+    : request.headers?.[name]) || "";
+}
+
 function isAuthorized(request, config) {
-  const auth = request.headers.get("authorization") || "";
+  const auth = getHeader(request, "authorization");
   return auth === `Bearer ${config.security.backgroundRunToken}`;
 }
 
