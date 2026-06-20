@@ -5,8 +5,6 @@ import { runWatcher } from "../src/run-watch.mjs";
 export const maxDuration = 300;
 
 function isAuthorized(request, config) {
-  // Vercel cron chama com GET; chamadas manuais usam POST + Bearer token.
-  if (request.method === "GET") return true;
   const auth = request.headers.get("authorization") || "";
   return auth === `Bearer ${config.security.backgroundRunToken}`;
 }
