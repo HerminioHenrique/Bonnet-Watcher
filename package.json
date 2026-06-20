@@ -15,6 +15,7 @@
     "nodemailer": "^6.10.1"
   },
   "devDependencies": {
+    "netlify-cli": "^26.1.0",
     "vercel": "^44.4.3"
   }
 }
