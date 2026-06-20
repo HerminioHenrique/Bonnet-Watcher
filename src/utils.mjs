@@ -4,6 +4,18 @@ export function normalizeWhitespace(value = "") {
   return value.replace(/\s+/g, " ").trim();
 }
 
+export function looksLikeStyleNoise(text = "") {
+  const normalized = normalizeWhitespace(String(text || ""));
+  return (
+    !normalized ||
+    normalized.startsWith(".css-") ||
+    normalized.includes("@media") ||
+    normalized.includes("{width:") ||
+    normalized.includes("display:-webkit-box") ||
+    normalized.length > 240
+  );
+}
+
 export function extractPriceValue(priceText = "") {
   const text = normalizeWhitespace(priceText);
   if (!text) return { priceValue: null, currency: null };

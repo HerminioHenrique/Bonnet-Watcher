@@ -7,6 +7,7 @@ export function getConfig() {
       maxPriceGbp: Number(process.env.MAX_PRICE_GBP || 850),
       minimumAlertScore: Number(process.env.MINIMUM_ALERT_SCORE || 60),
       maxResultsPerQuery: Number(process.env.MAX_RESULTS_PER_QUERY || 10),
+      maxAlertsPerRun: Number(process.env.MAX_ALERTS_PER_RUN || 5),
     },
     supabase: {
       url: process.env.SUPABASE_URL || "",
@@ -56,7 +57,7 @@ export function getConfig() {
       sources: {
         ebay_uk: true,
         gumtree_uk: true,
-        b_parts_uk: true,
+        b_parts_uk: false, // blocked by AWS WAF — requires real browser (use local Python version)
         google_shopping_uk: true,
         google_search_uk: true
       }

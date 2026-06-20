@@ -1,5 +1,5 @@
 import * as cheerio from "cheerio";
-import { normalizeUrl, normalizeWhitespace } from "./utils.mjs";
+import { looksLikeStyleNoise, normalizeUrl, normalizeWhitespace } from "./utils.mjs";
 
 const DEFAULT_HEADERS = {
   "accept-language": "en-GB,en;q=0.9",
@@ -20,18 +20,6 @@ function makeCandidate(source, searchTerm, title, url, extra = {}) {
     external_id: extra.external_id || "",
     attributes: extra.attributes || {},
   };
-}
-
-function looksLikeStyleNoise(text = "") {
-  const normalized = normalizeWhitespace(text);
-  if (!normalized) return true;
-  return (
-    normalized.startsWith(".css-") ||
-    normalized.includes("@media") ||
-    normalized.includes("{width:") ||
-    normalized.includes("display:-webkit-box") ||
-    normalized.length > 240
-  );
 }
 
 function pickReasonableTitle(possibleTitles = []) {
@@ -362,36 +350,56 @@ async function searchGumtree(config) {
   return { items, stats };
 }
 
+// B-Parts text search ignores the query string entirely (retorna 13M+ resultados aleatórios).
+// O único jeito de filtrar por modelo é o param `vehicle=`. Mas o site usa AWS WAF que bloqueia
+// fetch() simples com um JS challenge — por isso b_parts_uk está desabilitado na config.
+// Código correto mantido aqui para quando houver proxy/browser disponível.
+const B_PARTS_VEHICLE_SLUG = "renault-zoe-hatchback-van-bfm_-59605-vm";
+const B_PARTS_BASE = "https://www.b-parts.co.uk";
+
 async function searchBParts(config) {
   const source = "b_parts_uk";
   const items = [];
-  const stats = { source, queries_attempted: 0, matched_results: 0, query_errors: 0 };
+  const stats = { source, queries_attempted: 1, matched_results: 0, query_errors: 0 };
+  const browseUrl = `${B_PARTS_BASE}/auto-parts/search?category=body-parts&subCategory=hood&vehicle=${B_PARTS_VEHICLE_SLUG}&shipping_location=12`;
 
-  for (const term of config.search.terms) {
-    stats.queries_attempted += 1;
-    try {
-      const html = await fetchHtml(`https://www.b-parts.com/auto-parts/search?query=${encodeURIComponent(term)}`);
-      const $ = cheerio.load(html);
-      let termMatches = 0;
-      $("a[href*='/auto-parts/']").each((_, element) => {
-        const href = $(element).attr("href");
-        if (!href || href.includes("/search")) return;
-        const title = $(element).text();
-        const container = $(element).closest("article, li, div");
-        const raw = container.text() || title;
-        if (!title || !looksRelevant(`${title} ${raw}`, config)) return;
-        items.push(
-          makeCandidate(source, term, title, `https://www.b-parts.com${href}`, {
-            summary: raw,
-            raw_text: raw,
-          })
-        );
-        termMatches += 1;
-      });
-      stats.matched_results += termMatches;
-    } catch {
+  try {
+    const html = await fetchHtml(browseUrl);
+    // B-Parts é um Next.js SPA — resultados ficam em __NEXT_DATA__ (dehydratedState)
+    const match = html.match(/<script id="__NEXT_DATA__"[^>]*>([\s\S]*?)<\/script>/);
+    if (!match) {
       stats.query_errors += 1;
+      return { items, stats };
     }
+    const data = JSON.parse(match[1]);
+    const queries = data?.props?.pageProps?.dehydratedState?.queries ?? [];
+    const productsQuery = queries.find((q) => q.queryKey?.includes("products"));
+    const results = productsQuery?.state?.data?.results ?? [];
+
+    for (const item of results) {
+      const slug = item.slug || "";
+      if (!slug) continue;
+      const reference = item.reference || "";
+      const carBrand = item.car_brand || "";
+      const carModel = item.car_model || "";
+      const partName = item.part || "";
+      const price = item.pricing?.price_final_printable || "";
+      const title = [partName, carBrand, carModel, reference ? `[${reference}]` : ""].filter(Boolean).join(" ");
+      const url = `${B_PARTS_BASE}/auto-parts/body-parts/${slug}?shipping_location=12`;
+      const raw = [title, item.car_version || "", reference].filter(Boolean).join(" ");
+      items.push(
+        makeCandidate(source, "Renault Zoe BFM_ hood", title, url, {
+          price_text: price,
+          location: "Ships to UK",
+          summary: `B-Parts: ${carBrand} ${carModel} ${partName}`,
+          raw_text: raw,
+          attributes: { product_id: String(item.id || ""), reference, car_model: carModel },
+        })
+      );
+    }
+    stats.matched_results = items.length;
+  } catch {
+    stats.query_errors += 1;
   }
 
   return { items, stats };

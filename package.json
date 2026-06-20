@@ -4,7 +4,7 @@
   "private": true,
   "type": "module",
   "scripts": {
-    "dev": "netlify dev",
+    "dev": "vercel dev",
     "build": "node -e \"console.log('No build step required')\"",
     "test-run": "node ./scripts/test-run.mjs"
   },
@@ -15,6 +15,6 @@
     "nodemailer": "^6.10.1"
   },
   "devDependencies": {
-    "netlify-cli": "^23.4.0"
+    "vercel": "^44.4.3"
   }
 }

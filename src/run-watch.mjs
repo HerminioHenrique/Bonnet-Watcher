@@ -26,6 +26,7 @@ export async function runWatcher() {
   for (const listing of ranked) {
     await upsertListing(client, listing);
     if (listing.score < config.watcher.minimumAlertScore) continue;
+    if (alertCount >= config.watcher.maxAlertsPerRun) continue;
     if (await hasAlertBeenSent(client, listing.fingerprint)) continue;
     const notification = await sendAlertIfConfigured(config, listing);
     await recordAlert(client, listing, notification.transport, notification.payload);

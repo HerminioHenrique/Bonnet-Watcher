@@ -1,17 +1,5 @@
 import { createClient } from "@supabase/supabase-js";
-import { utcNow } from "./utils.mjs";
-
-function looksLikeStyleNoise(text = "") {
-  const value = String(text || "").trim();
-  return (
-    !value ||
-    value.startsWith(".css-") ||
-    value.includes("@media") ||
-    value.includes("{width:") ||
-    value.includes("display:-webkit-box") ||
-    value.length > 240
-  );
-}
+import { looksLikeStyleNoise, utcNow } from "./utils.mjs";
 
 function deriveSafeTitle(row) {
   const title = String(row.title || "").trim();
